@@ -9,7 +9,7 @@
         position: "fixed",
         width: "2px",
         height: "500px",
-        background: "#18b389",
+        background: "orange",
         pointerEvents: "none",
         zIndex: "2147483647",
         left: "0px",
