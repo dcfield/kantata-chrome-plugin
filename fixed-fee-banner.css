@@ -1,0 +1,92 @@
+#kantata-fixed-fee-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff7f00 100%);
+  color: white;
+  z-index: 10000;
+  padding: 12px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+#kantata-fixed-fee-banner * {
+  box-sizing: border-box;
+}
+
+.fixed-fee-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.fixed-fee-label {
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.fixed-fee-value {
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.fixed-fee-input-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  padding: 8px 12px;
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+#fixed-fee-percentage {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#fixed-fee-percentage:focus {
+  outline: 2px solid rgba(255,255,255,0.8);
+  outline-offset: 1px;
+  background: white;
+}
+
+.fixed-fee-error {
+  color: #ffeeee;
+  font-style: italic;
+  font-weight: normal;
+}
+
+.fixed-fee-loading {
+  color: #fff3cd;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  #kantata-fixed-fee-banner {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  
+  .fixed-fee-section {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,166 @@
+# Technical Requirements Document: Activate Fixed Fee Plugin
+
+## 1. Overview
+This Chrome extension feature adds a persistent banner that displays project cost calculations with adjustable margin percentages for project management interfaces.
+
+## 2. Feature Toggle
+
+### 2.1 Plugin Settings
+- **Requirement**: Add checkbox in Chrome extension popup menu
+- **Label**: "Activate Fixed Fee Plugin"
+- **Behavior**: 
+  - Checked = Feature active, banner visible
+  - Unchecked = Feature inactive, banner hidden
+- **Default State**: Unchecked
+
+## 3. Banner Implementation
+
+### 3.1 Banner Positioning & Styling
+- **Position**: Fixed at top of browser viewport
+- **Z-index**: High value to ensure visibility above all page content
+- **Background**: Bright orange color theme
+- **Width**: Full viewport width
+- **Height**: Auto-adjust to content
+- **Layout**: Horizontal arrangement of elements
+
+### 3.2 Banner Visibility
+- **Show Condition**: Plugin checkbox is enabled
+- **Hide Condition**: Plugin checkbox is disabled
+- **Persistence**: Always visible when enabled (no dismiss option)
+
+## 4. Data Extraction
+
+### 4.1 Source Element Detection
+- **Target Element**: Div containing "Est. Cost" with dynamic class names
+- **Selection Strategy**: Use `data-testid` attribute for reliability:
+  ```html
+  [data-testid="Total estimated cost (Resource Estimated Hours * Cost Rate) of named and unnamed resource assignments on this project."]
+  ```
+- **Fallback Strategy**: If testid unavailable, search for div containing "Est. Cost" header text
+
+### 4.2 Value Processing
+- **Extract From**: `.summary-bar_summary-item__content--[randomID]` child element
+- **Format Conversion**: 
+  - Remove `&nbsp;` characters
+  - Remove currency symbols (€, £, $)
+  - Remove thousand separators (spaces, commas)
+  - Convert to numeric value
+- **Currency Detection**: Preserve original currency symbol for display formatting
+
+### 4.3 Error Handling
+- **Missing Element**: Display "Cannot find the Estimated Cost on this page"
+- **Invalid Value**: Display "Unable to parse cost value"
+- **Network Issues**: Retry extraction after 2 seconds
+
+## 5. Banner Components
+
+### 5.1 Estimated Cost Display
+- **Label**: "Estimated Cost:"
+- **Value**: Extracted cost in original currency format
+- **Position**: Left side of banner
+- **Update Trigger**: Page load and DOM changes
+
+### 5.2 Percentage Input Control
+- **Type**: HTML number input with spinner controls
+- **Range**: -100% to +100%
+- **Default Value**: 45%
+- **Decimal Support**: Yes (e.g., 10.5%)
+- **Input Methods**:
+  - Manual text entry
+  - Increment/decrement buttons (step: 0.1%)
+  - Keyboard up/down arrows
+- **Position**: Center of banner
+- **Label**: "Margin %:"
+
+### 5.3 Calculated Fee Display
+- **Label**: "Estimated Fee with Margin:"
+- **Calculation**: `Estimated Cost × (1 + Percentage/100)`
+- **Rounding**: Round to nearest whole number
+- **Format**: Same currency format as original (symbol, thousand separators)
+- **Position**: Right side of banner
+- **Update Trigger**: Real-time as percentage changes
+
+## 6. Calculation Examples
+
+### Example 1: Positive Margin
+- **Estimated Cost**: 209,536 €
+- **Margin**: 10%
+- **Result**: 230,490 € (209,536 × 1.1 = 230,489.6, rounded to 230,490)
+
+### Example 2: Negative Margin
+- **Estimated Cost**: 209,536 €
+- **Margin**: -25%
+- **Result**: 157,152 € (209,536 × 0.75 = 157,152)
+
+## 7. Multi-Currency Support
+- **Supported Currencies**: Euro (€), British Pound (£), US Dollar ($)
+- **Detection Method**: Identify currency symbol in extracted value
+- **Display Consistency**: Maintain original currency symbol and formatting
+
+## 8. Technical Implementation Notes
+
+### 8.1 DOM Monitoring
+- **Observer**: MutationObserver to detect page changes
+- **Scope**: Monitor changes to cost summary section
+- **Performance**: Debounce updates to prevent excessive recalculation
+
+### 8.2 Data Persistence
+- **Session Scope**: No persistence between page loads
+- **Default Behavior**: Reset to 45% on each page load
+- **State Management**: Store current values in memory only
+
+### 8.3 Browser Compatibility
+- **Target**: Chrome extension manifest v3
+- **CSS**: Use standard CSS properties for broad compatibility
+- **JavaScript**: ES6+ features acceptable for Chrome extension context
+
+## 9. User Experience Requirements
+
+### 9.1 Visual Feedback
+- **Loading State**: Show "Loading..." while extracting cost data
+- **Error State**: Clear error messaging for extraction failures
+- **Real-time Updates**: Immediate calculation updates on percentage change
+
+### 9.2 Accessibility
+- **Keyboard Navigation**: All controls accessible via keyboard
+- **Screen Readers**: Proper labeling for assistive technologies
+- **Color Contrast**: Ensure text readability on orange background
+
+## 10. Testing Scenarios
+
+### 10.1 Functional Tests
+- [ ] Plugin toggle enables/disables banner
+- [ ] Cost extraction works with various number formats
+- [ ] Percentage input accepts valid range (-100% to +100%)
+- [ ] Calculation accuracy for positive and negative margins
+- [ ] Multi-currency support (€, £, $)
+- [ ] Error handling for missing cost elements
+
+### 10.2 Edge Cases
+- [ ] Very large cost values
+- [ ] Extreme percentage values (-100%, +100%)
+- [ ] Page navigation and banner persistence
+- [ ] Multiple tabs with different cost values
+- [ ] Rapid percentage changes (performance)
+
+## 11. Implementation Priority
+
+### Phase 1: Core Functionality
+1. Basic banner display
+2. Cost value extraction
+3. Percentage input control
+4. Calculation logic
+
+### Phase 2: Enhanced Features
+1. Multi-currency support
+2. Error handling
+3. Visual feedback states
+
+### Phase 3: Polish & Testing
+1. Accessibility improvements
+2. Performance optimization
+3. Comprehensive testing
+
+---
+
+*This technical requirements document provides the foundation for implementing the "Activate Fixed Fee Plugin" feature. Please review and confirm if any adjustments are needed before development begins.*
