@@ -1,0 +1,7 @@
+/* cursor-fix.css */
+/* Force the standard arrow cursor across the page in resourcing tab */
+html,
+body,
+* {
+    cursor: default !important;
+}

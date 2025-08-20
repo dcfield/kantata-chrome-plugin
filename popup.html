@@ -2,51 +2,227 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Toggle User Tools</title>
+    <title>Kantata Tools</title>
     <meta name="color-scheme" content="light dark" />
     <style>
       html, body {
-        margin: 0;
-        padding: 12px;
-        width: 300px;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        margin: 0; padding: 0; width: 320px; min-height: 240px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #1e293b;
       }
-      .wrap { display: grid; gap: 10px; }
-      h1 {
-        margin: 0 0 2px;
-        font-size: 14px;
-        font-weight: 600;
+      @media (prefers-color-scheme: dark) {
+        html, body {
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+          color: #f1f5f9;
+        }
       }
-      .hint {
-        font-size: 12px;
-        opacity: 0.7;
+
+      .header {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        padding: 16px 20px;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
       }
+      .header h1 {
+        margin: 0; font-size: 18px; font-weight: 700; color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      .header .subtitle {
+        font-size: 12px; opacity: 0.9; color: #dbeafe; margin-top: 2px;
+      }
+
+      .content {
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .action-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.06);
+        transition: all 0.2s ease;
+      }
+      @media (prefers-color-scheme: dark) {
+        .action-card {
+          background: #334155;
+          border-color: rgba(255,255,255,0.1);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+      }
+
+      .primary-action {
+        text-align: center;
+      }
+      
       button#btnClickToggleUsers {
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid rgba(0,0,0,0.15);
-        background: transparent;
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
         cursor: pointer;
-        font: inherit;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+      button#btnClickToggleUsers:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      }
+      button#btnClickToggleUsers:active {
+        transform: translateY(0);
+      }
+      button#btnClickToggleUsers:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .feature-section h3 {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       @media (prefers-color-scheme: dark) {
-        button#btnClickToggleUsers { border-color: rgba(255,255,255,0.2); }
+        .feature-section h3 { color: #94a3b8; }
       }
-      button#btnClickToggleUsers:hover { background: rgba(0,0,0,0.05); }
+
+      .control-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .control-row:last-child { margin-bottom: 0; }
+
+      .control-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
       @media (prefers-color-scheme: dark) {
-        button#btnClickToggleUsers:hover { background: rgba(255,255,255,0.06); }
+        .control-icon { background: #475569; }
       }
-      button#btnClickToggleUsers:disabled { opacity: 0.6; cursor: not-allowed; }
+
+      .control-label {
+        flex: 1;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .control-label code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #4338ca;
+      }
+      @media (prefers-color-scheme: dark) {
+        .control-label code {
+          background: #475569;
+          color: #a5b4fc;
+        }
+      }
+
+
+      .checkbox-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #3b82f6;
+        cursor: pointer;
+      }
+
+      .footer {
+        padding: 16px 20px;
+        text-align: center;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        background: rgba(255,255,255,0.5);
+      }
+      @media (prefers-color-scheme: dark) {
+        .footer {
+          border-color: rgba(255,255,255,0.1);
+          background: rgba(0,0,0,0.2);
+        }
+      }
+      .footer-text {
+        font-size: 11px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .footer-text { color: #94a3b8; }
+      }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1>Actions</h1>
-      <button id="btnClickToggleUsers" type="button" aria-label='Click all "Toggle User" buttons'>
-        Click all "Toggle User" buttons
-      </button>
-      <div class="hint">Open DevTools to see console messages.</div>
+    <div class="header">
+      <h1>Kantata Tools</h1>
+      <div class="subtitle">Productivity Enhancement</div>
     </div>
+    
+    <div class="content">
+      <div class="action-card primary-action">
+        <button id="btnClickToggleUsers" type="button" aria-label='Click all "Toggle User" buttons'>
+          🎯 Click all "Toggle User" buttons
+        </button>
+      </div>
+
+      <div class="action-card feature-section">
+        <h3>/resourcing Features</h3>
+        
+        <div class="control-row">
+          <div class="control-icon">🖱️</div>
+          <div class="control-label">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="cursorToggle" />
+              <span style="margin-left: 8px;">Disable hand cursor on <code>/resourcing</code></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-icon">📍</div>
+          <div class="control-label">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="cursorLineCheckbox" />
+              <span style="margin-left: 8px;">Show cursor line in <code>/resourcing</code></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-text">
+        💬 Console shows detailed messages
+      </div>
+    </div>
+
     <script src="popup.js"></script>
   </body>
 </html>
