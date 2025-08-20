@@ -50,7 +50,7 @@
   backdrop-filter: blur(10px);
 }
 
-#fixed-fee-percentage {
+#fixed-fee-percentage, #calculated-fee-input {
   width: 80px;
   padding: 6px 8px;
   border: 1px solid rgba(255,255,255,0.3);
@@ -62,10 +62,57 @@
   text-align: center;
 }
 
-#fixed-fee-percentage:focus {
+#calculated-fee-input {
+  width: 120px;
+}
+
+#fixed-fee-percentage:focus, #calculated-fee-input:focus {
   outline: 2px solid rgba(255,255,255,0.8);
   outline-offset: 1px;
   background: white;
+}
+
+#calculated-fee-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.5);
+}
+
+.calculate-btn {
+  padding: 4px 8px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(5px);
+  white-space: nowrap;
+}
+
+.calculate-btn:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.6);
+  transform: translateY(-1px);
+}
+
+.calculate-btn:active {
+  transform: translateY(0);
+  background: rgba(255,255,255,0.1);
+}
+
+.calculate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.calculate-btn:disabled:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+  transform: none;
 }
 
 .fixed-fee-error {
