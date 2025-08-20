@@ -1,9 +1,10 @@
 # Rules of engagement
 - Always give me a plan before making change so I can verify it.
+- For new feature branches, ask me for the feature name if I don't give it.
 
 # Shortcuts
 - If I type any of the following, translate it to the associated command:
-  - cpp: Commit the code, push it to a feature branch and create a pull request for me to review.
+  - cpp: Commit the code, push it to a feature branch and create a pull request for me to review. Always give a detailed commit message
 
 # Kantata Chrome Plugin
 

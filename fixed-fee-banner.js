@@ -20,18 +20,24 @@
       <div class="fixed-fee-input-section">
         <span class="fixed-fee-label">Margin %:</span>
         <input type="number" id="fixed-fee-percentage" value="45" step="1">
+        <button id="calculate-fee-btn" class="calculate-btn">Calculate Fee</button>
       </div>
-      <div class="fixed-fee-section">
+      <div class="fixed-fee-input-section">
         <span class="fixed-fee-label">Estimated Fee with Margin:</span>
-        <span class="fixed-fee-value" id="calculated-fee-display">-</span>
+        <input type="number" id="calculated-fee-input" step="1" min="0" placeholder="0">
+        <button id="calculate-margin-btn" class="calculate-btn">Calculate Margin</button>
       </div>
     `;
 
     document.body.appendChild(banner);
 
     const percentageInput = document.getElementById('fixed-fee-percentage');
-    percentageInput.addEventListener('input', calculateAndDisplayFee);
-    percentageInput.addEventListener('change', calculateAndDisplayFee);
+    const feeInput = document.getElementById('calculated-fee-input');
+    const calculateFeeBtn = document.getElementById('calculate-fee-btn');
+    const calculateMarginBtn = document.getElementById('calculate-margin-btn');
+    
+    calculateFeeBtn.addEventListener('click', () => calculateFromPercentage());
+    calculateMarginBtn.addEventListener('click', () => calculateFromFee());
 
     adjustBodyMargin();
     return banner;
@@ -114,11 +120,17 @@
     return `${formatted} ${currency}`;
   }
 
-  function calculateAndDisplayFee() {
+  let isUpdating = false;
+
+  function calculateFromPercentage() {
+    if (isUpdating) return;
+    isUpdating = true;
+
     const percentageInput = document.getElementById('fixed-fee-percentage');
-    const calculatedDisplay = document.getElementById('calculated-fee-display');
+    const feeInput = document.getElementById('calculated-fee-input');
     
-    if (!currentEstimatedCost || !percentageInput || !calculatedDisplay) {
+    if (!currentEstimatedCost || !percentageInput || !feeInput) {
+      isUpdating = false;
       return;
     }
 
@@ -126,7 +138,37 @@
     const multiplier = 1 + (percentage / 100);
     const calculatedFee = currentEstimatedCost * multiplier;
     
-    calculatedDisplay.textContent = formatCurrency(calculatedFee, currentCurrency);
+    feeInput.value = Math.round(calculatedFee);
+    
+    isUpdating = false;
+  }
+
+  function calculateFromFee() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const percentageInput = document.getElementById('fixed-fee-percentage');
+    const feeInput = document.getElementById('calculated-fee-input');
+    
+    if (!currentEstimatedCost || !percentageInput || !feeInput) {
+      isUpdating = false;
+      return;
+    }
+
+    const targetFee = parseFloat(feeInput.value) || 0;
+    
+    if (currentEstimatedCost === 0) {
+      percentageInput.value = 0;
+      isUpdating = false;
+      return;
+    }
+
+    const multiplier = targetFee / currentEstimatedCost;
+    const percentage = (multiplier - 1) * 100;
+    
+    percentageInput.value = Math.round(percentage * 10) / 10;
+    
+    isUpdating = false;
   }
 
   function updateEstimatedCost() {
@@ -139,16 +181,36 @@
       costDisplay.textContent = result.error;
       costDisplay.className = 'fixed-fee-value fixed-fee-error';
       currentEstimatedCost = null;
-      const calculatedDisplay = document.getElementById('calculated-fee-display');
-      if (calculatedDisplay) {
-        calculatedDisplay.textContent = '-';
+      const feeInput = document.getElementById('calculated-fee-input');
+      const calculateFeeBtn = document.getElementById('calculate-fee-btn');
+      const calculateMarginBtn = document.getElementById('calculate-margin-btn');
+      if (feeInput) {
+        feeInput.value = '';
+        feeInput.disabled = true;
+      }
+      if (calculateFeeBtn) {
+        calculateFeeBtn.disabled = true;
+      }
+      if (calculateMarginBtn) {
+        calculateMarginBtn.disabled = true;
       }
     } else {
       currentEstimatedCost = result.value;
       currentCurrency = result.currency;
       costDisplay.textContent = formatCurrency(result.value, result.currency);
       costDisplay.className = 'fixed-fee-value';
-      calculateAndDisplayFee();
+      const feeInput = document.getElementById('calculated-fee-input');
+      const calculateFeeBtn = document.getElementById('calculate-fee-btn');
+      const calculateMarginBtn = document.getElementById('calculate-margin-btn');
+      if (feeInput) {
+        feeInput.disabled = false;
+      }
+      if (calculateFeeBtn) {
+        calculateFeeBtn.disabled = false;
+      }
+      if (calculateMarginBtn) {
+        calculateMarginBtn.disabled = false;
+      }
     }
   }
 
