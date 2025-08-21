@@ -1,0 +1,16 @@
+## Feature: Disable Hand Cursor on /resourcing
+
+**Trigger:** Popup dropdown control  
+**Scope:** /resourcing pages only (case-insensitive URL match)  
+**Control:** Dropdown with "On/Off" options (default = On)  
+
+**Behavior:**
+- When enabled: Injects cursor-fix.css to force standard cursor
+- When disabled: Removes cursor-fix.css
+- Setting persisted via chrome.storage.sync
+
+**CSS Implementation:**
+```css
+* {
+    cursor: default !important;
+}

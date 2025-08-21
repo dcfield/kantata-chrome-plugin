@@ -1,0 +1,23 @@
+## Feature: Vertical Cursor Line in div[role="presentation"]
+
+**Trigger:** Popup checkbox control  
+**Scope:** /resourcing pages only (case-insensitive URL match)  
+**Control:** Checkbox (default = checked)  
+
+**Behavior:**
+- When enabled: Injects cursor-line-on.js to attach mouse tracking
+- When disabled: Injects cursor-line-off.js to remove mouse tracking and cleanup
+- Shows 2px red vertical line (24px tall) centered on cursor when hovering inside `div[role="presentation"]`
+- Setting persisted via chrome.storage.sync
+
+**Visual Specifications:**
+- Line color: Red
+- Line width: 2px
+- Line height: 24px
+- Position: Centered on cursor
+- Visibility: Only when hovering inside target elements
+
+**Cleanup Requirements:**
+- Removes event listeners when disabled
+- Removes any existing cursor line elements
+- No memory leaks or orphaned elements

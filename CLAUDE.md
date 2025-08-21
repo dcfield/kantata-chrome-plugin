@@ -1,6 +1,7 @@
 # Rules of engagement
 - Always give me a plan before making change so I can verify it.
-- For new feature branches, ask me for the feature name if I don't give it.
+- Make sure you are on a feature branch before making changes.
+- Always update the feature document after the code changes. If no feature document exists, create a new one under "feature_designs" folder.
 
 # Shortcuts
 - If I type any of the following, translate it to the associated command:
@@ -52,3 +53,6 @@ Popup control: Checkbox (default = checked)
     - Injects cursor-line-off.js to detach behavior
     - Effect: Shows a 2px red vertical line centered on the cursor (24px tall) when hovering inside div[role="presentation"]. Cleans up when disabled.
     - Repository Layout
+
+4. Project Estimate Calculator
+- See file 01_project-overview-estimate-calculator
