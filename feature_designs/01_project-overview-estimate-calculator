@@ -73,27 +73,42 @@ This Chrome extension feature adds a persistent banner that displays project cos
 - **Position**: Left-center of banner (within input section)
 - **Label**: "Margin %:"
 - **Styling**: 80px width, white background with orange border focus
+- **Calculate Button**: "Calculate Fee" button to trigger fee calculation
 
-### 5.3 Calculated Fee Display
+### 5.3 Calculated Fee Input Control
+- **Type**: HTML number input (editable, bidirectional)
 - **Label**: "Estimated Fee with Margin:"
+- **Calculation**: `Estimated Cost × (1 + Percentage/100)` (forward direction)
+- **Reverse Calculation**: `((Target Fee / Estimated Cost) - 1) × 100` (backward direction)
+- **Rounding**: Fee rounded to whole numbers, percentage to 1 decimal place
+- **Position**: Right side of banner (editable input field)
+- **Update Trigger**: Manual via "Calculate Margin" button
+- **Styling**: 120px width, white background with orange border focus
+- **Calculate Button**: "Calculate Margin" button to trigger percentage calculation
+
+## 6. Manual Calculation System
+
+### 6.1 Calculate Fee (Forward Direction)
+- **User Action**: Enter percentage → Click "Calculate Fee" button
 - **Calculation**: `Estimated Cost × (1 + Percentage/100)`
-- **Rounding**: Round to nearest whole number
-- **Format**: Same currency format as original (symbol, thousand separators)
-- **Position**: Right side of banner (display-only span)
-- **Update Trigger**: Real-time as percentage changes
-- **Styling**: Bold font weight, larger font size for emphasis
+- **Example**: Cost €100,000 + 15% margin → Click button → Fee €115,000
 
-## 6. Calculation Examples
+### 6.2 Calculate Margin (Reverse Direction)
+- **User Action**: Enter target fee → Click "Calculate Margin" button  
+- **Calculation**: `((Target Fee / Estimated Cost) - 1) × 100`
+- **Example**: Cost €100,000, Target €120,000 → Click button → Margin 20%
 
-### Example 1: Positive Margin
+### 6.3 Calculation Examples
+
+#### Forward Calculation (Percentage → Fee)
 - **Estimated Cost**: 209,536 €
 - **Margin**: 10%
 - **Result**: 230,490 € (209,536 × 1.1 = 230,489.6, rounded to 230,490)
 
-### Example 2: Negative Margin
+#### Reverse Calculation (Fee → Percentage)
 - **Estimated Cost**: 209,536 €
-- **Margin**: -25%
-- **Result**: 157,152 € (209,536 × 0.75 = 157,152)
+- **Target Fee**: 157,152 €
+- **Result**: -25.0% ((157,152 / 209,536) - 1) × 100 = -25%
 
 ## 7. Multi-Currency Support
 - **Supported Currencies**: Euro (€), British Pound (£), US Dollar ($)
@@ -126,7 +141,8 @@ This Chrome extension feature adds a persistent banner that displays project cos
 ### 9.1 Visual Feedback
 - **Loading State**: Show "Loading..." while extracting cost data
 - **Error State**: Clear error messaging for extraction failures
-- **Real-time Updates**: Immediate calculation updates on percentage change
+- **Manual Updates**: User-controlled calculations via button clicks
+- **Button States**: Visual hover effects and disabled states for better UX
 
 ### 9.2 Accessibility
 - **Keyboard Navigation**: All controls accessible via keyboard
@@ -156,8 +172,8 @@ This Chrome extension feature adds a persistent banner that displays project cos
 1. ✅ **Core Functionality**
    - Banner display with orange gradient styling
    - Cost value extraction with dual strategy (testid + fallback)
-   - Percentage input control with real-time updates
-   - Calculation logic with proper rounding
+   - Bidirectional input controls (percentage ↔ fee)
+   - Manual calculation system with explicit user control
 
 2. ✅ **Enhanced Features**
    - Multi-currency support (€, £, $) with intelligent parsing
@@ -165,7 +181,13 @@ This Chrome extension feature adds a persistent banner that displays project cos
    - Visual feedback states (loading, error, success)
    - DOM monitoring with debounced performance optimization
 
-3. ✅ **Integration & Polish**
+3. ✅ **User Experience Improvements**
+   - Manual "Calculate Fee" and "Calculate Margin" buttons
+   - No interference while typing in input fields
+   - Translucent button styling with hover effects
+   - Proper disabled states when cost extraction fails
+
+4. ✅ **Integration & Polish**
    - Chrome extension popup integration with storage sync
    - Left-aligned banner layout as requested
    - Proper cleanup and memory management
@@ -181,10 +203,12 @@ This Chrome extension feature adds a persistent banner that displays project cos
 All core functionality implemented and ready for user testing:
 - [✅] Plugin toggle enables/disables banner
 - [✅] Cost extraction works with testid and fallback strategies
-- [✅] Real-time percentage calculations with 45% default
+- [✅] Manual calculation buttons work in both directions
+- [✅] Bidirectional editing without input interference
 - [✅] Multi-currency support with proper formatting
 - [✅] Error handling for missing cost elements
 - [✅] DOM monitoring with performance optimization
+- [✅] Button styling and disabled states function correctly
 
 ---
 
