@@ -1,0 +1,246 @@
+# Technical Requirements Document: Enhanced Fixed Fee Plugin with Working Weeks Calculator
+
+## 1. Overview
+This document outlines enhancements to the existing "Activate Fixed Fee Plugin" Chrome extension. The updated plugin will retain all current functionality while adding a new working weeks calculation feature based on resource hours data from the Team Members table.
+
+**Enhancement Type**: Addition to existing functionality - all current features remain unchanged.
+
+## 2. Existing Feature Summary (Unchanged)
+The plugin currently provides:
+- Feature toggle checkbox in Chrome extension popup
+- Persistent orange banner at top of viewport when enabled
+- Estimated Cost extraction from summary bar
+- Percentage input control (-100% to +100%, default 45%)
+- Real-time "Estimated Fee with Margin" calculation
+
+## 3. New Feature: Working Weeks Calculator
+
+### 3.1 Data Source
+- **Target Table**: Team Members table with resource hours data
+- **Column Identification**: `data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"`
+- **Data Format**: Hours displayed as "312h" format
+- **Selection Criteria**: Identify highest individual resource hours value
+
+### 3.2 Working Weeks Calculation
+- **Hours per Working Day**: 8 hours
+- **Working Days per Week**: 5 days (Monday-Friday)
+- **Formula**: `Highest Hours ÷ 8 hours ÷ 5 days = Working Weeks`
+- **Example**: 312h ÷ 8 ÷ 5 = 7.8 working weeks
+- **Rounding**: Round to 1 decimal place
+
+### 3.3 Display Requirements
+- **Position**: Below existing banner components (under "Estimated Fee with Margin")
+- **Layout**: Horizontal alignment with other banner elements
+- **Primary Display**: "Estimated Duration: [X.X] working weeks"
+- **Explanation Mechanism**: Tooltip/popup showing calculation breakdown
+
+### 3.4 Explanation Popup
+- **Trigger**: Hover or click on the working weeks display
+- **Content Format**: 
+  ```
+  Calculation Breakdown:
+  Highest Resource Hours: [X]h
+  ÷ 8 hours per day = [X] working days
+  ÷ 5 days per week = [X.X] working weeks
+  ```
+- **Styling**: Consistent with banner theme, readable on orange background
+
+## 4. Enhanced Banner Layout
+
+### 4.1 Updated Component Order (Left to Right)
+1. **Estimated Cost**: [Existing functionality]
+2. **Margin % Input**: [Existing functionality] 
+3. **Estimated Fee with Margin**: [Existing functionality]
+4. **Estimated Duration**: [NEW] Working weeks calculation
+
+### 4.2 Responsive Design
+- Maintain horizontal layout on standard screens
+- Consider wrapping to second row if viewport width insufficient
+- Preserve orange banner styling and accessibility
+
+## 5. Data Processing Requirements
+
+### 5.1 Resource Hours Extraction
+- **Search Strategy**: Query all elements with ResourceHours column identifier
+- **Value Processing**:
+  - Extract numeric value from "XXXh" format
+  - Handle formats like "312h" and "312h58" (ignore minutes portion)
+  - Convert to integer for calculation
+- **Highest Value Selection**: Use Math.max() to identify highest hours
+- **Duplicate Handling**: If multiple resources have same highest hours, use first found
+
+### 5.2 Data Validation
+- **Missing Table**: Display "Cannot find Team Members table"
+- **No Hours Data**: Display "Cannot estimate working weeks without Resource Hours data"
+- **Invalid Data**: Skip entries with non-numeric or zero values
+- **Empty Results**: Display "No valid resource hours found"
+
+## 6. Update Triggers
+
+### 6.1 Synchronization with Existing Features
+- **Same Update Events**: Working weeks calculation updates whenever Estimated Cost updates
+- **DOM Monitoring**: Use existing MutationObserver to detect table changes
+- **Performance**: Combine with existing debounce mechanism
+
+### 6.2 Calculation Flow
+1. Extract highest resource hours from Team Members table
+2. Perform working weeks calculation
+3. Update display with new value
+4. Refresh explanation popup content
+
+## 7. Implementation Examples
+
+### 7.1 Sample Calculations
+```
+Resource Hours: 312h
+→ 312 ÷ 8 = 39 working days
+→ 39 ÷ 5 = 7.8 working weeks
+Display: "Estimated Duration: 7.8 working weeks"
+
+Resource Hours: 156h  
+→ 156 ÷ 8 = 19.5 working days
+→ 19.5 ÷ 5 = 3.9 working weeks
+Display: "Estimated Duration: 3.9 working weeks"
+```
+
+### 7.2 Error States
+```
+No table found: "Cannot find Team Members table"
+No hours data: "Cannot estimate working weeks without Resource Hours data" 
+All zero hours: "No valid resource hours found"
+```
+
+## 8. Technical Implementation Updates
+
+### 8.1 New DOM Selectors
+```javascript
+// Resource hours extraction
+const hoursElements = document.querySelectorAll(
+  '[data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"] .cells_styles__time-container--KQFrG'
+);
+```
+
+### 8.2 Additional Functions Required
+- `extractResourceHours()`: Parse resource hours from table
+- `calculateWorkingWeeks()`: Perform working weeks calculation  
+- `updateWorkingWeeksDisplay()`: Update banner display
+- `generateExplanationTooltip()`: Create calculation breakdown
+
+### 8.3 Enhanced Error Handling
+- Extend existing error handling to cover resource hours extraction
+- Maintain graceful degradation - show existing features even if working weeks fails
+- Log specific errors for debugging
+
+## 9. Updated Testing Scenarios
+
+### 9.1 New Functional Tests
+- [ ] Working weeks calculation accuracy for various hour values
+- [ ] Highest hours selection from multiple resources
+- [ ] Explanation popup display and content accuracy
+- [ ] Error handling for missing Team Members table
+- [ ] Update synchronization with existing cost calculations
+- [ ] Tooltip/popup accessibility and keyboard navigation
+
+### 9.2 Integration Tests
+- [ ] All existing Fixed Fee Plugin functionality remains unchanged
+- [ ] Banner layout accommodates new component without breaking
+- [ ] Performance impact assessment with additional DOM monitoring
+- [ ] Multi-currency support compatibility with new feature
+
+### 9.3 Edge Cases
+- [ ] Table with all zero hour resources
+- [ ] Resources with same highest hours (duplicate values)
+- [ ] Time formats with minutes ("312h58" vs "312h")
+- [ ] Very large hour values (1000h+)
+- [ ] Rapid table content changes
+
+## 10. Backward Compatibility
+- **Existing Users**: No impact on current plugin functionality
+- **Graceful Degradation**: Working weeks feature fails silently if table unavailable
+- **Settings Preservation**: Existing percentage settings and cost calculations unaffected
+- **Performance**: Minimal additional overhead using existing DOM monitoring
+
+## 11. Implementation Priority
+
+### Phase 1: Core Integration
+1. Add working weeks calculation logic
+2. Integrate with existing update triggers
+3. Extend banner layout for new component
+
+### Phase 2: User Experience
+1. Implement explanation tooltip/popup
+2. Add error handling and messaging
+3. Ensure accessibility compliance
+
+### Phase 3: Testing & Polish
+1. Comprehensive testing with existing features
+2. Performance optimization
+3. Edge case handling refinement
+
+---
+
+## 12. Implementation Status: COMPLETED ✅
+
+### 12.1 Implemented Features
+- [x] Resource hours extraction from Team Members table using multiple selector strategies
+- [x] Working weeks calculation logic (highest hours ÷ 8 ÷ 5, rounded to 1 decimal)
+- [x] Enhanced banner layout with new "Estimated Duration" display component
+- [x] Interactive tooltip showing calculation breakdown on hover
+- [x] Comprehensive error handling for all failure scenarios
+- [x] Integration with existing update triggers and DOM monitoring
+- [x] CSS styling consistent with banner theme
+
+### 12.2 Technical Implementation Details
+
+**Files Modified:**
+- `fixed-fee-banner.js`: Enhanced with working weeks functionality
+- `fixed-fee-banner.css`: Added tooltip styling and hover effects
+
+**Key Functions Added:**
+- `extractResourceHours()`: Multi-strategy selector approach for reliable data extraction
+- `calculateWorkingWeeks(hours)`: Core calculation logic with validation
+- `updateWorkingWeeks()`: Display update with error handling
+- `updateTooltip(calculationResult)`: Dynamic tooltip content generation
+
+**DOM Selectors Implemented:**
+```javascript
+'[data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"] .cells_styles__time-container--KQFrG, ' +
+'[data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"] [class*="time-container"], ' +
+'[data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"]'
+```
+
+**Error States Handled:**
+- "Cannot find Team Members table" - when table/column not found
+- "No valid resource hours found" - when no valid hour data exists
+- "Invalid hours value" - when calculation receives invalid input
+
+### 12.3 User Experience Features
+- **Display Format**: "X.X working weeks" (e.g., "7.8 working weeks")
+- **Hover Tooltip**: Shows calculation breakdown with highest hours, working days, and weeks
+- **Visual Consistency**: Matches existing banner styling with orange gradient background
+- **Responsive Design**: Tooltip positioning adapts to banner layout
+- **Error Graceful**: Displays helpful error messages without breaking other features
+
+### 12.4 Integration Points
+- **Update Synchronization**: Uses existing debounced MutationObserver (500ms delay)
+- **Initialization**: Integrates with existing DOM ready and timeout logic (1000ms delay)
+- **Cleanup**: Properly handles component removal and observer disconnection
+- **Performance**: Minimal overhead by reusing existing DOM monitoring infrastructure
+
+---
+
+*This enhanced technical requirements document extends the existing Fixed Fee Plugin with working weeks calculation functionality. All current plugin features and behaviors remain unchanged, with new functionality added as complementary enhancements.*
+
+**Implementation completed on feature branch: `feature/working-weeks-calculator`**
+
+
+
+
+
+
+
+
+
+
+BUG 1: Wrong value
+<div class="overview_styles__table-container--ktgMb"><table class="overview_styles__overview-table--sGEtL"><thead class="attribute-row_styles__fixed-width-header--WkWup attribute-row_styles__header--aGzx2 table_table__head--_O_aZ attribute-row_styles__headerFont--ZWgMj"><tr><th class="team-members_column-styles__Resource--NU4MW" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource" title="Team Member"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="team-members_column-styles__Resource--NU4MW">Team Member</div></div></th><th class="table_table__headerCell--FdVZS table_table__cell--rEt1W" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Project Role"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="attribute-row_styles__headerContent--GPyfr">Project Role</div></div></th><th class="team-members_column-styles__ResourceHours--poTrf" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours" title="Res. Est. Hours"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="team-members_column-styles__ResourceHours--poTrf">Res. Est. Hours</div></div></th><th class="team-members_column-styles__EstimatedCost--EBahh" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost" title="Est. Cost"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="team-members_column-styles__EstimatedCost--EBahh">Est. Cost</div></div></th><th class="team-members_column-styles__CostRate--AUCWc" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate" title="Cost Rate"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="team-members_column-styles__CostRate--AUCWc">Cost Rate</div></div></th><th class="team-members_column-styles__AllocatedHours--cg6lS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours" title="Allocated Hours"><div class="attribute-row_styles__fixedColumnHeader--Peoc2"><div class="team-members_column-styles__AllocatedHours--cg6lS">Allocated Hours</div></div></th></tr></thead><tbody class="configurable-table-v2_styles__tableBody--e1GCs"><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Earl Gaylard " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="earl-gaylard-tooltip" data-testid="earl-gaylard-tooltip">Earl Gaylard </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Delivery Director"><span class="cells_styles__truncate--wfo9z">Delivery Director</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">102h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£5,225.46</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£51.23</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">102h58</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Conor McKiernan " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="conor-mc-kiernan-tooltip" data-testid="conor-mc-kiernan-tooltip">Conor McKiernan </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Project Manager"><span class="cells_styles__truncate--wfo9z">Project Manager</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£9,559.68</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£30.64</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Alan Ward " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="alan-ward-tooltip" data-testid="alan-ward-tooltip">Alan Ward </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Engineering Manager"><span class="cells_styles__truncate--wfo9z">Engineering Manager</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">156h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£4,587.96</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£29.41</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">156h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Devinder Kumar " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="devinder-kumar-tooltip" data-testid="devinder-kumar-tooltip">Devinder Kumar </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Technical Lead"><span class="cells_styles__truncate--wfo9z">Technical Lead</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£11,774.88</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£37.74</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Amanda Hughes " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="amanda-hughes-tooltip" data-testid="amanda-hughes-tooltip">Amanda Hughes </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£16,823.04</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£53.92</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Silviu Necsulescu " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="silviu-necsulescu-tooltip" data-testid="silviu-necsulescu-tooltip">Silviu Necsulescu </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£15,141.36</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£48.53</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Hrishikesh Kulkarni " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="hrishikesh-kulkarni-tooltip" data-testid="hrishikesh-kulkarni-tooltip">Hrishikesh Kulkarni </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Software Engineer"><span class="cells_styles__truncate--wfo9z">Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£10,514.40</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£33.70</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">16h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Denis G. Noonan" class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://mavenlink-file-assets-production.s3.us-west-2.amazonaws.com/attachments/final/2025-07-23/19058888/6f9a70_pinkynail" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="denis-g-noonan-tooltip" data-testid="denis-g-noonan-tooltip">Denis G. Noonan</span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£14,913.60</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£47.80</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Rahul Kumar Pampati " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="rahul-kumar-pampati-tooltip" data-testid="rahul-kumar-pampati-tooltip">Rahul Kumar Pampati </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£13,191.36</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£42.28</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Sujith Sukumaran " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="sujith-sukumaran-tooltip" data-testid="sujith-sukumaran-tooltip">Sujith Sukumaran </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£15,294.24</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£49.02</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Janardhan Gopalachar " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="janardhan-gopalachar-tooltip" data-testid="janardhan-gopalachar-tooltip">Janardhan Gopalachar </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£9,765.60</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£31.30</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="David Fekete " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="david-fekete-tooltip" data-testid="david-fekete-tooltip">David Fekete </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£18,504.72</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£59.31</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Amit Kumar  " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="amit-kumar-tooltip" data-testid="amit-kumar-tooltip">Amit Kumar  </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£18,161.52</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£58.21</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Conor Lynam " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="conor-lynam-tooltip" data-testid="conor-lynam-tooltip">Conor Lynam </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Software Engineer"><span class="cells_styles__truncate--wfo9z">Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£6,118.32</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£19.61</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Muhammad Umair " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="muhammad-umair-tooltip" data-testid="muhammad-umair-tooltip">Muhammad Umair </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£13,288.08</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£42.59</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Jonathan Ryan" class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://mavenlink-file-assets-production.s3.us-west-2.amazonaws.com/attachments/final/2025-07-07/19058928/33d549_pinkynail" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="jonathan-ryan-tooltip" data-testid="jonathan-ryan-tooltip">Jonathan Ryan</span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Product Designer"><span class="cells_styles__truncate--wfo9z">Product Designer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">156h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£7,456.80</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£47.80</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">156h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="David Caulfield" class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://mavenlink-file-assets-production.s3.us-west-2.amazonaws.com/attachments/final/2025-04-02/19049523/1fdf63_pinkynail" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="david-caulfield-tooltip" data-testid="david-caulfield-tooltip">David Caulfield</span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title=""><span class="cells_styles__truncate--wfo9z"></span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">0h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£0.00</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£45.34</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">0h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Tristan Gutierrez" class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://mavenlink-file-assets-production.s3.us-west-2.amazonaws.com/attachments/final/2025-07-07/19059019/789940_pinkynail" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="tristan-gutierrez-tooltip" data-testid="tristan-gutierrez-tooltip">Tristan Gutierrez</span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">312h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£13,191.36</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£42.28</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Gokula Krishna Damodharan " class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://app.mavenlink.com/images/default_profile_photo/pinkynail.png" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="gokula-krishna-damodharan-tooltip" data-testid="gokula-krishna-damodharan-tooltip">Gokula Krishna Damodharan </span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Software Engineer"><span class="cells_styles__truncate--wfo9z">Senior Software Engineer</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">0h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£0.00</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£44.61</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">312h</div></td></tr><tr class="table_table__row--HopJF"><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource"><div title="Aileen Cramer" class="cells_styles__resource-info-card--lHYnj cards_resource-card__info-card--GTn0l stylesheet-utilities_text__reset-text--jsVQ6"><div class="cards_resource-card__resource-info--zC7rD"><img src="https://mavenlink-file-assets-production.s3.us-west-2.amazonaws.com/attachments/final/2025-04-10/19044807/72e62a_pinkynail" class="cards_resource-card__resource-card-image--R3VUG" alt="profile image"><div class="cards_resource-card__resource-info-text--rL1LJ"><div class="cards_resource-card__resourceCardName--lLbGa" tabindex="0"><span aria-describedby="aileen-cramer-tooltip" data-testid="aileen-cramer-tooltip">Aileen Cramer</span></div></div></div></div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title="Senior Executive"><span class="cells_styles__truncate--wfo9z">Senior Executive</span></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">0h</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£0.00</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"><div class="cells_styles__money-container--qkZv5">£0.00</div></td><td class="" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">0h</div></td></tr><tr data-testid="spacer-row" style="height: 100%;"></tr><tr class=" summary-row_styles__summaryRow--O3aJq"><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Resource" title="Total"><span class="cells_styles__truncate--wfo9z">Total</span></td><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role" title=""><span class="cells_styles__truncate--wfo9z"></span></td><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"><div class="cells_styles__time-container--KQFrG">4,782h</div></td><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::EstimatedCost"><div class="cells_styles__money-container--qkZv5">£203,512.38</div></td><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate" title=""><span class="cells_styles__truncate--wfo9z"></span></td><td class="summary-row_styles__summaryCell--wvXFS" data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"><div class="cells_styles__time-container--KQFrG">4,798h58</div></td></tr></tbody></table></div>

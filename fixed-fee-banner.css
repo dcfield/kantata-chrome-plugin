@@ -126,6 +126,45 @@
   font-style: italic;
 }
 
+.working-weeks-tooltip {
+  position: fixed;
+  display: none;
+  z-index: 10001;
+  pointer-events: none;
+}
+
+.tooltip-content {
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(0,0,0,0.9);
+}
+
+#working-weeks-display {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted rgba(255,255,255,0.6);
+}
+
+#working-weeks-display:hover {
+  border-bottom-color: rgba(255,255,255,0.9);
+}
+
 @media (max-width: 768px) {
   #kantata-fixed-fee-banner {
     flex-direction: column;
