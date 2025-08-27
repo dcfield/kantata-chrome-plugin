@@ -109,8 +109,14 @@
   function adjustBodyMargin() {
     const banner = document.getElementById('kantata-fixed-fee-banner');
     if (banner) {
-      const bannerHeight = banner.offsetHeight;
-      document.body.style.marginTop = `${bannerHeight}px`;
+      // Use requestAnimationFrame to ensure the banner is fully rendered
+      requestAnimationFrame(() => {
+        const bannerHeight = banner.offsetHeight;
+        // Add a small buffer for the box shadow (8px shadow + 4px extra spacing)
+        const marginTop = bannerHeight + 12;
+        document.body.style.marginTop = `${marginTop}px`;
+        console.log(`Banner height: ${bannerHeight}px, setting body margin-top to: ${marginTop}px`);
+      });
     }
   }
 
@@ -454,12 +460,12 @@
     
     if (prechecks.zeroCostCount > 0) {
       const resourceNames = prechecks.zeroCostResources.join(', ');
-      listItems.push(`<li class="precheck-warning precheck-tooltip" data-tooltip="Resources: ${resourceNames}">⚠️ ${prechecks.zeroCostCount} resources with ${prechecks.currency}0.00 cost rate</li>`);
+      listItems.push(`<li class="precheck-warning precheck-tooltip" data-tooltip="Resources: ${resourceNames}">⚠️ ${prechecks.zeroCostCount} resources with ${prechecks.currency}0.00 cost rate. Check this is ok. To override their cost rate go to "Gear icon above => Rates & Roles => Double click on cost rate => Enter new value"</li>`);
     }
     
     if (prechecks.zeroHoursCount > 0) {
       const resourceNames = prechecks.zeroHoursResources.join(', ');
-      listItems.push(`<li class="precheck-warning precheck-tooltip" data-tooltip="Resources: ${resourceNames}">⚠️ ${prechecks.zeroHoursCount} resource${prechecks.zeroHoursCount > 1 ? 's' : ''} with 0h estimated hours</li>`);
+      listItems.push(`<li class="precheck-warning precheck-tooltip" data-tooltip="Resources: ${resourceNames}">⚠️ ${prechecks.zeroHoursCount} resource${prechecks.zeroHoursCount > 1 ? 's' : ''} with 0h estimated hours. Check you have input everyone's estimated hours in the resourcing tab.</li>`);
     }
 
     if (prechecks.roleDistribution && prechecks.roleDistribution.length > 0) {
@@ -625,6 +631,9 @@
     
     // Add tooltip functionality to precheck items
     setupPrecheckTooltips();
+    
+    // Recalculate body margin since prechecks section may have changed banner height
+    adjustBodyMargin();
   }
 
   function setupPrecheckTooltips() {
@@ -757,6 +766,8 @@
       updateEstimatedCost();
       updateWorkingWeeks();
       updatePrechecks();
+      // Ensure body margin is adjusted after any content updates
+      adjustBodyMargin();
     }, 500);
 
     mutationObserver = new MutationObserver((mutations) => {

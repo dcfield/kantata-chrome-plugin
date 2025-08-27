@@ -16,13 +16,16 @@ This Chrome extension feature adds a persistent banner that displays project cos
 ## 3. Banner Implementation
 
 ### 3.1 Banner Positioning & Styling
-- **Position**: Fixed at top of browser viewport
+- **Position**: Fixed at top of browser viewport (changed from absolute to ensure consistent positioning)
 - **Z-index**: High value (10000) to ensure visibility above all page content
 - **Background**: Orange gradient (`linear-gradient(135deg, #ff8c00 0%, #ff7f00 100%)`)
 - **Width**: Full viewport width
-- **Height**: Auto-adjust to content (approx. 48px)
+- **Height**: Auto-adjust to content (approx. 48px base + dynamic expansion for prechecks)
 - **Layout**: Left-aligned horizontal arrangement with 20px gaps
-- **Body Adjustment**: Automatically adds top margin to prevent content overlap
+- **Body Adjustment**: 
+  - Automatically calculates banner height using `requestAnimationFrame` for accuracy
+  - Adds body margin-top with 12px buffer to account for box shadow and spacing
+  - Recalculates dynamically when content changes (e.g., prechecks section appears/hides)
 
 ### 3.2 Banner Visibility
 - **Show Condition**: Plugin checkbox is enabled
@@ -191,7 +194,11 @@ This Chrome extension feature adds a persistent banner that displays project cos
    - Chrome extension popup integration with storage sync
    - Left-aligned banner layout as requested
    - Proper cleanup and memory management
-   - Body margin adjustment to prevent content overlap
+   - Enhanced body margin adjustment system:
+     - Fixed positioning for consistent viewport placement
+     - Dynamic margin calculation with requestAnimationFrame timing
+     - Buffer space for box shadow and visual separation
+     - Automatic recalculation when banner content changes
 
 ### 📂 Implementation Files
 - `fixed-fee-banner.css` - Banner styling with orange gradient theme
