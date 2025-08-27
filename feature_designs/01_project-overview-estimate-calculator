@@ -89,6 +89,16 @@ This Chrome extension feature adds a persistent banner that displays project cos
 - **Styling**: 120px width, white background with orange border focus
 - **Calculate Button**: "Calculate Margin" button to trigger percentage calculation
 
+### 5.4 Estimated Duration Display
+- **Label**: "Estimated Duration:"
+- **Value**: Calculated working weeks based on highest allocated hours
+- **Position**: Right side of banner
+- **Update Trigger**: Page load and DOM changes
+- **Calculation**: Highest Allocated Hours ÷ 8 hours per day ÷ 5 days per week
+- **Data Source**: "Allocated Hours" column (searches for column containing "Allocated Hours" text)
+- **Tooltip**: Shows calculation breakdown on hover (hours → days → weeks)
+- **Error Handling**: Displays error message if Allocated Hours column not found
+
 ## 6. Manual Calculation System
 
 ### 6.1 Calculate Fee (Forward Direction)

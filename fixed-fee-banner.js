@@ -37,7 +37,7 @@
           <div class="working-weeks-tooltip" id="working-weeks-tooltip">
             <div class="tooltip-content" id="tooltip-content">
               Calculation Breakdown:<br>
-              Highest Resource Hours: <span id="tooltip-hours">-</span>h<br>
+              Highest Allocated Hours: <span id="tooltip-hours">-</span>h<br>
               ÷ 8 hours per day = <span id="tooltip-days">-</span> working days<br>
               ÷ 5 days per week = <span id="tooltip-weeks">-</span> working weeks
             </div>
@@ -184,45 +184,86 @@
   }
 
   function extractResourceHours() {
-    // Exclude summary/total rows by looking for individual team member rows only
-    const hoursElements = document.querySelectorAll(
-      'tr:not(.summary-row_styles__summaryRow--O3aJq) [data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"] .cells_styles__time-container--KQFrG, ' +
-      'tr:not(.summary-row_styles__summaryRow--O3aJq) [data-resizable-column-id="Project::Overview::TeamMembers::Columns::ResourceHours"] [class*="time-container"]'
-    );
+    // Look for "Allocated Hours" column instead of individual team member hours
+    // First try to find the column by looking for "Allocated Hours" text
+    let allocatedHoursElements = [];
+    
+    // Look for elements containing "Allocated Hours" text to identify the column
+    const allElements = document.querySelectorAll('*');
+    let allocatedHoursColumnId = null;
+    
+    for (let el of allElements) {
+      const text = (el.textContent || el.innerText || '').trim();
+      if (text.includes('Allocated Hours') || text.includes('Allocated') && text.includes('Hours')) {
+        // Found the header, now find the column ID
+        const columnHeader = el.closest('[data-resizable-column-id]');
+        if (columnHeader) {
+          allocatedHoursColumnId = columnHeader.getAttribute('data-resizable-column-id');
+          console.log(`Found Allocated Hours column ID: ${allocatedHoursColumnId}`);
+          break;
+        }
+      }
+    }
+    
+    // If we found the column ID, use it; otherwise try common patterns
+    const selectors = [];
+    if (allocatedHoursColumnId) {
+      selectors.push(`[data-resizable-column-id="${allocatedHoursColumnId}"] .cells_styles__time-container--KQFrG`);
+      selectors.push(`[data-resizable-column-id="${allocatedHoursColumnId}"] [class*="time-container"]`);
+    }
+    
+    // Fallback selectors for common Allocated Hours patterns
+    selectors.push('[data-resizable-column-id*="AllocatedHours"] .cells_styles__time-container--KQFrG');
+    selectors.push('[data-resizable-column-id*="AllocatedHours"] [class*="time-container"]');
+    selectors.push('[data-resizable-column-id*="Allocated"] .cells_styles__time-container--KQFrG');
+    selectors.push('[data-resizable-column-id*="Allocated"] [class*="time-container"]');
+    
+    // Try each selector until we find elements
+    for (let selector of selectors) {
+      allocatedHoursElements = document.querySelectorAll(selector);
+      if (allocatedHoursElements.length > 0) {
+        console.log(`Found ${allocatedHoursElements.length} elements using selector: ${selector}`);
+        break;
+      }
+    }
 
-    if (hoursElements.length === 0) {
-      return { error: "Cannot find Team Members table" };
+    if (allocatedHoursElements.length === 0) {
+      return { error: "Cannot find Allocated Hours column" };
     }
 
     let maxHours = 0;
     let foundValidData = false;
 
-    hoursElements.forEach(element => {
-      // Skip if this element is in a summary row (additional check)
+    allocatedHoursElements.forEach((element, index) => {
+      // Skip if this element is in a summary/total row
       const row = element.closest('tr');
       if (row && (row.classList.contains('summary-row_styles__summaryRow--O3aJq') || 
                   row.querySelector('.cells_styles__truncate--wfo9z')?.textContent?.toLowerCase().includes('total'))) {
+        console.log(`Skipping total/summary row with hours: ${element.textContent}`);
         return;
       }
-
+      
       const text = element.textContent || element.innerText || '';
-      const hoursMatch = text.match(/^(\d+)h$/); // More strict matching - must be exactly "digits+h"
+      // Look for hours in various formats: "1488h", "1,488h", "1.488h"
+      const hoursMatch = text.match(/^([\d,\.]+)h$/);
       
       if (hoursMatch) {
-        const hours = parseInt(hoursMatch[1], 10);
+        // Remove commas and dots used as thousand separators
+        const cleanNumber = hoursMatch[1].replace(/[,\.]/g, '');
+        const hours = parseInt(cleanNumber, 10);
         if (hours > 0) {
           foundValidData = true;
           maxHours = Math.max(maxHours, hours);
-          console.log(`Found resource hours: ${hours}h, current max: ${maxHours}h`);
+          console.log(`Found allocated hours: ${text} (parsed as ${hours}h), current max: ${maxHours}h`);
         }
       }
     });
 
     if (!foundValidData) {
-      return { error: "No valid resource hours found" };
+      return { error: "No valid allocated hours found" };
     }
 
-    console.log(`Final highest resource hours: ${maxHours}h`);
+    console.log(`Final highest allocated hours: ${maxHours}h`);
     return { hours: maxHours };
   }
 
