@@ -1,0 +1,169 @@
+# Technical Requirements Document: Project Prechecks Feature
+
+## 1. Overview
+This document defines a new Project Prechecks feature to be added to the existing Fixed Fee Plugin Chrome extension. This feature analyzes Team Members table data to provide project validation warnings and team composition insights.
+
+**Feature Type**: Additional feature for existing Fixed Fee Plugin
+**Dependencies**: Requires existing Fixed Fee Plugin infrastructure and banner system
+
+## 2. Feature Description
+The Project Prechecks feature automatically scans the Team Members table and displays validation warnings and team analytics within the existing plugin banner. It identifies potential project setup issues and provides team composition visibility.
+
+## 3. Precheck Components
+
+### 3.1 Zero Cost Rate Validation
+- **Purpose**: Identify resources with missing or zero cost rates
+- **Data Source**: `data-resizable-column-id="Project::Overview::TeamMembers::Columns::CostRate"`
+- **Target Elements**: `.cells_styles__money-container--qkZv5` within cost rate columns
+- **Detection Logic**: Count resources where cost rate equals:
+  - "£0.00", "$0.00", "€0.00"
+  - Empty strings
+  - Missing elements
+- **Display Format**: "[X] resources with [currency]0.00 cost rate"
+- **Display Condition**: Only show when count > 0
+- **Currency Handling**: Use detected currency symbol from table data
+
+### 3.2 Zero Allocated Hours Validation
+- **Purpose**: Identify resources with no allocated hours
+- **Data Source**: `data-resizable-column-id="Project::Overview::TeamMembers::Columns::AllocatedHours"`
+- **Target Elements**: `.cells_styles__time-container--KQFrG` within allocated hours columns
+- **Detection Logic**: Count resources where allocated hours equals:
+  - "0h"
+  - Empty strings
+  - Missing elements
+- **Display Format**: "[X] resources with 0h allocated hours"
+- **Display Condition**: Only show when count > 0
+
+### 3.3 Role Distribution Analysis
+- **Purpose**: Provide team composition overview
+- **Data Source**: `data-resizable-column-id="Project::Overview::TeamMembers::Columns::Role"`
+- **Target Elements**: `.cells_styles__truncate--wfo9z` within role columns
+- **Processing Logic**: 
+  - Count occurrences of each unique role title
+  - Handle empty/missing roles as "Unassigned"
+  - Sort by count (descending), then alphabetically
+- **Display Format**: "Senior Software Engineer: 8, Project Manager: 1, Technical Lead: 1"
+- **Display Condition**: Always show
+- **Truncation**: Limit display if total length exceeds reasonable banner width
+
+## 4. Data Processing Requirements
+
+### 4.1 Table Row Selection
+```javascript
+// Exclude total summary row from analysis
+const teamMemberRows = document.querySelectorAll(
+  '.table_table__row--HopJF:not(.summary-row_styles__summaryRow--O3aJq)'
+);
+```
+
+### 4.2 Data Extraction Functions
+- **extractCostRates()**: Parse cost rate values, handle currency symbols
+- **extractAllocatedHours()**: Parse hour values, handle "Xh" format
+- **extractRoles()**: Extract role titles, handle empty values
+- **excludeTotalRow()**: Filter out summary rows from calculations
+
+### 4.3 Validation Logic
+- **Cost Rate Validation**: 
+  ```javascript
+  const isZeroCost = (value) => {
+    return !value || value.match(/^[£$€]?0\.00$/) || value.trim() === '';
+  };
+  ```
+- **Hours Validation**:
+  ```javascript
+  const isZeroHours = (value) => {
+    return !value || value === '0h' || value.trim() === '';
+  };
+  ```
+
+## 5. Integration with Existing Plugin
+
+### 5.1 Banner Layout Updates
+- **Position**: New prechecks appear below existing working weeks calculator
+- **Styling**: Maintain orange banner theme with appropriate warning indicators
+- **Layout Flow**: Vertical stacking of precheck results
+- **Responsive Design**: Wrap text appropriately for narrow viewports
+
+### 5.2 Update Synchronization
+- **Trigger Events**: Use existing plugin update triggers
+- **DOM Monitoring**: Extend existing MutationObserver to include Team Members table
+- **Performance**: Combine with existing debounce mechanism
+- **Error Handling**: Integrate with existing error handling system
+
+## 6. Display Examples
+
+### 6.1 Warning Messages
+```
+Cost Rate Issues: "3 resources with £0.00 cost rate"
+Allocation Issues: "1 resource with 0h allocated hours"
+Mixed Currency: "2 resources with $0.00 cost rate"
+```
+
+### 6.2 Role Distribution
+```
+Standard Display: "Senior Software Engineer: 6, Project Manager: 1, Technical Lead: 1, Product Designer: 1"
+With Unassigned: "Senior Software Engineer: 5, Unassigned: 2, Project Manager: 1"
+Truncated: "Senior Software Engineer: 8, Project Manager: 1, Technical Lead: 1..."
+```
+
+### 6.3 No Issues Found
+```
+Only role distribution shown when no warnings needed:
+"Senior Software Engineer: 8, Project Manager: 1, Technical Lead: 1"
+```
+
+## 7. Error Handling
+
+### 7.1 Table Access Errors
+- **Missing Table**: "Cannot find Team Members table for prechecks"
+- **No Data Rows**: "No team member data available for analysis"
+- **Column Missing**: Skip specific precheck silently, continue with others
+
+### 7.2 Data Processing Errors
+- **Invalid Cost Format**: Skip entry, continue counting valid entries
+- **Invalid Hours Format**: Skip entry, continue counting valid entries
+- **Parsing Failures**: Log error, display partial results
+
+## 8. Testing Requirements
+
+### 8.1 Functional Tests
+- [ ] Zero cost rate detection across currencies (£, $, €)
+- [ ] Zero allocated hours detection with various formats
+- [ ] Role distribution counting accuracy
+- [ ] Total row exclusion verification
+- [ ] Warning display conditions (show only when count > 0)
+- [ ] Role distribution display formatting
+
+### 8.2 Integration Tests
+- [ ] Synchronization with existing plugin update triggers
+- [ ] Banner layout compatibility with existing features
+- [ ] Performance impact assessment
+- [ ] DOM monitoring extension functionality
+
+### 8.3 Edge Case Tests
+- [ ] Empty Team Members table
+- [ ] Table with only total row
+- [ ] Mixed currency scenarios
+- [ ] Very long role names or many different roles
+- [ ] Resources with missing data in multiple columns
+
+## 9. Implementation Priority
+
+### Phase 1: Core Validation Logic
+1. Implement table data extraction with total row exclusion
+2. Build zero cost rate and allocated hours validation
+3. Create role distribution analysis
+
+### Phase 2: Display Integration
+1. Extend existing banner layout for precheck display
+2. Implement warning message formatting
+3. Add role distribution display with truncation
+
+### Phase 3: Polish & Performance
+1. Optimize table scanning performance
+2. Enhance error handling and edge cases
+3. Comprehensive testing with existing plugin features
+
+---
+
+*This Project Prechecks feature document defines additional functionality for the existing Fixed Fee Plugin. The feature leverages the plugin's existing infrastructure while providing valuable project validation and team composition insights.*

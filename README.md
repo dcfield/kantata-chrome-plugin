@@ -4,6 +4,8 @@
 
 A Chrome Manifest V3 extension designed to enhance productivity and user experience when working with Kantata project management interfaces. This extension provides four distinct features: global toggle functionality, cursor behavior improvements, visual tracking aids, and project cost calculation tools. Built with a focus on minimal UI interference while maximizing workflow efficiency for project managers and resource planners.
 
+![Kantata Chrome Plugin](https://i.imgur.com/bfPhR4k.png)
+
 ## Problem Statement
 
 Working with Kantata's project management interface presented several workflow inefficiencies:
@@ -30,6 +32,7 @@ These inefficiencies compounded during busy project planning periods, leading to
 - **Use Case**: Bulk user management operations
 - **Access**: Single button in extension popup
 - **Feedback**: Console logging for each successful click and summary messages
+
 
 ### 2. Disable Hand Cursor on /resourcing Pages
 - **Scope**: Only active on pages containing `/resourcing` in URL
