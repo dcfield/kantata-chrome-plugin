@@ -1,12 +1,12 @@
 /* David's Additions */
 /* Target any class that starts with "overview_styles__overview-wrapper" */
 [class*="overview_styles__overview-wrapper"] {
-  display: block;
+  display: block !important;
 }
 
 /* Target any class that starts with "overview_styles__table-wrapper" */
 [class*="overview_styles__table-wrapper"] {
-  width: 100%;
+  width: 100% !important;
 }
 
 #kantata-fixed-fee-banner {
