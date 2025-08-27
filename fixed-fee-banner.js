@@ -109,8 +109,14 @@
   function adjustBodyMargin() {
     const banner = document.getElementById('kantata-fixed-fee-banner');
     if (banner) {
-      const bannerHeight = banner.offsetHeight;
-      document.body.style.marginTop = `${bannerHeight}px`;
+      // Use requestAnimationFrame to ensure the banner is fully rendered
+      requestAnimationFrame(() => {
+        const bannerHeight = banner.offsetHeight;
+        // Add a small buffer for the box shadow (8px shadow + 4px extra spacing)
+        const marginTop = bannerHeight + 12;
+        document.body.style.marginTop = `${marginTop}px`;
+        console.log(`Banner height: ${bannerHeight}px, setting body margin-top to: ${marginTop}px`);
+      });
     }
   }
 
@@ -625,6 +631,9 @@
     
     // Add tooltip functionality to precheck items
     setupPrecheckTooltips();
+    
+    // Recalculate body margin since prechecks section may have changed banner height
+    adjustBodyMargin();
   }
 
   function setupPrecheckTooltips() {
@@ -757,6 +766,8 @@
       updateEstimatedCost();
       updateWorkingWeeks();
       updatePrechecks();
+      // Ensure body margin is adjusted after any content updates
+      adjustBodyMargin();
     }, 500);
 
     mutationObserver = new MutationObserver((mutations) => {
