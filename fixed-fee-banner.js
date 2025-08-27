@@ -387,7 +387,8 @@
 
   function isZeroCost(value) {
     if (!value || value.trim() === '') return true;
-    return !!value.match(/^[£$€]?0\.00$/);
+    // Handle both UK/US format (£0.00, $0.00, €0.00) and European format (0,00 €, 0.00 €)
+    return !!value.match(/^([£$€]?0[.,]00|0[.,]00\s*[£$€])$/);
   }
 
   function isZeroHours(value) {
