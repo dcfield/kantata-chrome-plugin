@@ -5,6 +5,7 @@
 A Chrome Manifest V3 extension designed to enhance productivity and user experience when working with Kantata project management interfaces. This extension provides four distinct features: global toggle functionality, cursor behavior improvements, visual tracking aids, and project cost calculation tools. Built with a focus on minimal UI interference while maximizing workflow efficiency for project managers and resource planners.
 
 ![Kantata Chrome Plugin](https://i.imgur.com/bfPhR4k.png)
+![Dummy Project Kantata](https://i.imgur.com/x1plK0Z.png)
 
 ## Problem Statement
 
@@ -89,10 +90,6 @@ These inefficiencies compounded during busy project planning periods, leading to
 4. Enter desired margin percentage and click "Calculate Fee"
 5. Or enter target fee and click "Calculate Margin" for reverse calculation
 6. All calculations update manually via button clicks for precise control
-
-## Screenshots
-
-- tbc
 
 ### Workflow Enhancements
 - **Proposal Generation**: Streamlined cost calculation process enables faster client proposal turnaround
